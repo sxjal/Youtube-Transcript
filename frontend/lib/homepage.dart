@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-// import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({super.key});
@@ -11,28 +12,51 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _textEditingController = TextEditingController();
   ScrollController controller = ScrollController();
   late String _errorMessage = "";
   bool isSuccess = false;
+  String responseData = '';
+
+  Future<void> sendDataToServer(String link) async {
+    final response = await http.post(
+      Uri.parse('http://your_flask_server_ip:5000/receive_url'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{'url': link}),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      setState(() {
+        responseData = data[
+            'processed_url']; // Assuming processed_url is returned by Flask
+      });
+      print("URL sent successfully");
+    } else {
+      print("Failed to send URL");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenheight = MediaQuery.of(context).size.height;
     double inputfieldWidth = MediaQuery.of(context).size.width * .6;
     return Scaffold(
       body: Center(
-        child: SingleChildScrollView(
-          controller: controller,
-          child: Container(
-            padding: EdgeInsets.only(
-              left: screenheight * .1,
-            ),
+        child: Container(
+          padding: EdgeInsets.only(
+            left: screenheight * .1,
+          ),
+          child: SingleChildScrollView(
+            controller: controller,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 SizedBox(
-                  height: screenheight * .4,
+                  height: screenheight * .2,
                 ),
                 const Text(
                   "Youtube video transcript, detailed notes and summarizer",
@@ -57,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 10.0),
                 Row(
                   children: [
                     GestureDetector(
@@ -79,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   'Text must be at least 3 characters long';
                             } else {
                               isSuccess = true;
+                              sendDataToServer(inputText);
                             }
                           },
                         );
@@ -105,21 +130,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 20,
                 ),
-                Container(
-                  height: 500,
-                  width: 600,
-                  child: YoutubePlayer(
-                    controller: YoutubePlayerController(
-                      initialVideoId:
-                          'K18cpp_-gP8', // Replace with the ID of your YouTube video
-                      flags: YoutubePlayerFlags(
-                        autoPlay: false,
-                        mute: false,
-                      ),
-                    ),
-                  ),
+                // Container(
+                //   height: screenheight * .5,
+                //   width: MediaQuery.of(context).size.width * .5,
+                //   child: YoutubePlayer(
+                //     controller: YoutubePlayerController(
+                //       initialVideoId: 'K18cpp_-gP8',
+                //       flags: const YoutubePlayerFlags(
+                //         autoPlay: true,
+                //         mute: true,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                const SizedBox(
+                  height: 20,
                 ),
               ],
             ),
