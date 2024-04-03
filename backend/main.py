@@ -16,7 +16,7 @@ def getvideodata():
 	url = request.json['url']
 	id = extract.video_id(url)
 	transcript = YouTubeTranscriptApi.get_transcript(id)
-	print(transcript)
+	# print(transcript)
 	text_list = []
 	with open('transcript.json', 'r') as f:
 		data = json.load(f)
@@ -25,7 +25,7 @@ def getvideodata():
 		text_list.append(item['text'])
 
 	text = ' '.join(text_list)
-
+	print("sending data.")
 	data = {'videoId': id, 'transcript': transcript, 'textData': text}
 	return jsonify(data)
 
