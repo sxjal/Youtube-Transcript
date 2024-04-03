@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({super.key});
@@ -16,11 +16,13 @@ class _MyHomePageState extends State<MyHomePage> {
   ScrollController controller = ScrollController();
   late String _errorMessage = "";
   bool isSuccess = false;
-  String responseData = '';
+  late String videoId;
+  late String transcript;
+  late String textData;
 
   Future<void> getvideoID(String link) async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/getvideoid'),
+      Uri.parse('http://127.0.0.1:5000/getvideodata'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -29,34 +31,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(response.body);
-      setState(() {
-        responseData = data[
-            'processed_url']; // Assuming processed_url is returned by Flask
-      });
-      print("URL sent successfully");
-      print(responseData);
-    } else {
-      print("Failed to send URL");
-    }
-  }
 
-  Future<void> getvideoTranscript(String link) async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/gettranscripts'),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(<String, String>{'url': link}),
-    );
+      videoId = data['videoId'];
+      transcript = data['transcript'];
+      textData = data['textData'];
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body);
-      setState(() {
-        responseData = data[
-            'processed_url']; // Assuming processed_url is returned by Flask
-      });
       print("URL sent successfully");
-      print(responseData);
+      print(videoId);
     } else {
       print("Failed to send URL");
     }
@@ -146,31 +127,31 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: 10,
                     ),
                     isSuccess
-                        ? Text("Youtube Video ID: $responseData")
+                        ? Text("Youtube Video ID: $videoId")
                         : const Text(""),
                   ],
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                isSuccess
-                    ? Container(
-                        height: screenheight * .5,
-                        width: MediaQuery.of(context).size.width * .5,
-                        child: YoutubePlayer(
-                          controller: YoutubePlayerController(
-                            initialVideoId: responseData,
-                            flags: const YoutubePlayerFlags(
-                              autoPlay: true,
-                              mute: true,
-                            ),
-                          ),
+                if (isSuccess)
+                  SizedBox(
+                    height: screenheight * .5,
+                    width: MediaQuery.of(context).size.width * .5,
+                    child: YoutubePlayer(
+                      controller: YoutubePlayerController(
+                        initialVideoId: videoId,
+                        flags: const YoutubePlayerFlags(
+                          autoPlay: true,
+                          mute: true,
                         ),
-                      )
-                    : Container(),
+                      ),
+                    ),
+                  ),
                 const SizedBox(
                   height: 20,
                 ),
+                //  Text(textData),
               ],
             ),
           ),
