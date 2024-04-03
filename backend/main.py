@@ -13,24 +13,10 @@ CORS(app)
 
 @app.route('/getvideoid', methods=['POST'])
 def getvideoid():
-    url = request.json['url']
-    # Process the URL as needed
-    print("Received URL:", url)
-
-    # Dummy data to send back to Flutter
-    data = {'message': 'URL received successfully', 'processed_url': extract.video_id(url)}
-    return jsonify(data)
-
-
-
-@app.route('/gettranscripts', methods=['POST'])
-def gettranscripts():
-	id = request.json['id']
-
-	print("video id: ",id)
+	url = request.json['url']
+	id = extract.video_id(url)
 	transcript = YouTubeTranscriptApi.get_transcript(id)
 	print(transcript)
-
 	text_list = []
 	with open('transcript.json', 'r') as f:
 		data = json.load(f)
@@ -40,8 +26,7 @@ def gettranscripts():
 
 	text = ' '.join(text_list)
 
- 
-	data = {'message': 'URL received successfully', 'transcript': transcript, 'textdata':text}
+	data = {'videoId': id, 'transcript': transcript, 'textdata': text}
 	return jsonify(data)
 
 

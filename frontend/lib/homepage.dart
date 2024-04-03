@@ -18,9 +18,31 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isSuccess = false;
   String responseData = '';
 
-  Future<void> sendDataToServer(String link) async {
+  Future<void> getvideoID(String link) async {
     final response = await http.post(
       Uri.parse('http://127.0.0.1:5000/getvideoid'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{'url': link}),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      setState(() {
+        responseData = data[
+            'processed_url']; // Assuming processed_url is returned by Flask
+      });
+      print("URL sent successfully");
+      print(responseData);
+    } else {
+      print("Failed to send URL");
+    }
+  }
+
+  Future<void> getvideoTranscript(String link) async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/gettranscripts'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -90,21 +112,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         setState(
                           () {
                             _errorMessage = "";
-                            String inputText =
-                                _textEditingController.text.trim();
-                            final bool isValidUrl =
-                                Uri.parse(inputText).isAbsolute;
+                            String link = _textEditingController.text.trim();
+                            final bool isValidUrl = Uri.parse(link).isAbsolute;
 
-                            if (inputText.isEmpty) {
+                            if (link.isEmpty) {
                               _errorMessage = 'Please enter some text';
                             } else if (!isValidUrl) {
                               _errorMessage = "Enter a valid URL";
-                            } else if (inputText.length < 3) {
+                            } else if (link.length < 3) {
                               _errorMessage =
                                   'Text must be at least 3 characters long';
                             } else {
+                              getvideoID(link);
                               isSuccess = true;
-                              sendDataToServer(inputText);
                             }
                           },
                         );
