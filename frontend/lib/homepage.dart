@@ -20,7 +20,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> sendDataToServer(String link) async {
     final response = await http.post(
-      Uri.parse('http://your_flask_server_ip:5000/receive_url'),
+      Uri.parse('http://127.0.0.1:5000/getvideoid'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -34,6 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
             'processed_url']; // Assuming processed_url is returned by Flask
       });
       print("URL sent successfully");
+      print(responseData);
     } else {
       print("Failed to send URL");
     }
@@ -125,26 +126,28 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: 10,
                     ),
                     isSuccess
-                        ? const Text("Youtube Video ID: ")
+                        ? Text("Youtube Video ID: $responseData")
                         : const Text(""),
                   ],
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                // Container(
-                //   height: screenheight * .5,
-                //   width: MediaQuery.of(context).size.width * .5,
-                //   child: YoutubePlayer(
-                //     controller: YoutubePlayerController(
-                //       initialVideoId: 'K18cpp_-gP8',
-                //       flags: const YoutubePlayerFlags(
-                //         autoPlay: true,
-                //         mute: true,
-                //       ),
-                //     ),
-                //   ),
-                // ),
+                isSuccess
+                    ? Container(
+                        height: screenheight * .5,
+                        width: MediaQuery.of(context).size.width * .5,
+                        child: YoutubePlayer(
+                          controller: YoutubePlayerController(
+                            initialVideoId: responseData,
+                            flags: const YoutubePlayerFlags(
+                              autoPlay: true,
+                              mute: true,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(),
                 const SizedBox(
                   height: 20,
                 ),
