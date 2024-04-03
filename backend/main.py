@@ -11,8 +11,8 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/getvideoid', methods=['POST'])
-def getvideoid():
+@app.route('/getvideodata', methods=['POST'])
+def getvideodata():
 	url = request.json['url']
 	id = extract.video_id(url)
 	transcript = YouTubeTranscriptApi.get_transcript(id)
@@ -26,7 +26,7 @@ def getvideoid():
 
 	text = ' '.join(text_list)
 
-	data = {'videoId': id, 'transcript': transcript, 'textdata': text}
+	data = {'videoId': id, 'transcript': transcript, 'textData': text}
 	return jsonify(data)
 
 
